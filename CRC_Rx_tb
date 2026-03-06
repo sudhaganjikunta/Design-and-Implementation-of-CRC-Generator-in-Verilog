@@ -1,0 +1,33 @@
+module tb(  );
+reg clk;
+reg enable;
+reg rst;
+reg [6:0] data_in;
+wire [9:0] data_out;
+wire [2:0] crc_out;
+
+crc_tx dut(.clk(clk),
+           .enable(enable),
+           .rst(rst),
+           .data_in(data_in),
+           .data_out(data_out),
+           .crc_out(crc_out));
+
+always #5 clk=~clk;
+initial begin
+$monitor(" clk:%b ; en:%b ; rst:%b ;data in:%b ; crc out:%b; data out:%b",
+            clk,enable,rst,data_in,crc_out,data_out);
+ 
+ clk=0;enable=0;rst=1;data_in=7'd0;
+ #10 rst =0;
+ 
+ #10 data_in=7'b1010000;enable=1;
+ #10 enable =0;
+  #10 data_in=7'b1110011;enable=1;
+ #10 enable =0;
+ #10 data_in=7'b1010101;enable=1;
+ #10 enable =0;
+ #20 $finish;
+ end
+ 
+endmodule
