@@ -1,0 +1,32 @@
+module tb_rx( );
+reg clk,enable,rst;
+reg [6:0] data_in;
+reg [2:0] crc_received;
+wire [2:0] crc_out;
+wire data_valid;
+
+crc_rx dut (.clk(clk),
+            .rst(rst),
+            .enable(enable),
+            .data_in(data_in),
+            .crc_received(crc_received),
+            .crc_out(crc_out),
+            .data_valid(data_valid));
+            
+  always #5 clk=~clk;
+  initial begin
+  $monitor(" clk: %b, rst:%b, en:%b, data:%b, crc_in:%b, crc_out:%b, valid:%b",
+        clk,rst,enable,data_in,crc_received, crc_out, data_valid);
+ clk=0; rst=1; enable=0; data_in=7'd0; crc_received=3'd0;
+ 
+ #10 rst=0;
+ #10 data_in=7'b1010000; crc_received=3'b011; enable=1;
+ #10 enable=0;
+ #10 data_in=7'b1110011; crc_received=3'b100; enable=1;
+ #10 enable=0;
+ #10 data_in=7'b1010101; crc_received= 3'b111; enable=1;
+ #10 enable=0;
+ $display("COMP CRC%d", dut.compute_crc(data_in));
+ #10 $finish;
+ end 
+endmodule
