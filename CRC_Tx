@@ -1,0 +1,41 @@
+module crc_tx(input clk,
+              input enable,
+              input rst,
+              input [6:0] data_in,
+              output [9:0]data_out,
+              output [2:0] crc_out);
+              
+              reg [9:0]tmp_data_out;
+              reg [2:0]tmp_crc_out;
+              
+function [2:0] compute_crc;  // returns crc out value
+input [6:0]data;
+reg [3:0]crc;
+integer i;
+begin
+crc = 4'b0000;
+for (i=7;i>=0;i=i-1)begin
+crc = crc<<1;
+if(crc[3] ^ data[i])
+crc= crc^4'b1001;   //x3+1 polynomial
+end
+
+compute_crc=crc[2:0];
+end
+endfunction
+
+always @ (posedge clk)begin
+if(rst)begin
+tmp_data_out <= 10'd0;
+tmp_crc_out <= 3'd0;
+end
+else if (enable)begin
+tmp_crc_out <=compute_crc(data_in);
+tmp_data_out <={data_in,compute_crc(data_in)};
+end
+end
+
+assign data_out=tmp_data_out;
+assign crc_out=tmp_crc_out;
+ 
+endmodule
