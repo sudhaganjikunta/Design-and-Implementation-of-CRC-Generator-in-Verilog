@@ -1,0 +1,36 @@
+module crc_rx(input clk,
+             input enable,
+             input rst,
+             input [6:0] data_in,
+             input [2:0]crc_received,
+             output reg [2:0]crc_out,
+             output  data_valid );
+             
+   function [2:0] compute_crc(input [6:0] data);
+             reg [3:0]crc;
+             integer i;
+             begin
+             crc = 4'b0000;
+              
+             for (i=6;i>=0;i=i-1)begin
+             crc = crc<<1;
+             if(crc[3] ^ data[i])
+             crc= crc^4'b1001;   //x3+1 polynomial
+             end
+             compute_crc = crc[2:0];
+             end
+             endfunction
+             
+             always @ (posedge clk)begin
+             if(rst)begin
+             crc_out<=3'b000;
+             //data_valid<=1'b0;
+             end
+             else if (enable)begin
+             crc_out<=compute_crc(data_in);
+             end
+             end
+             
+      assign data_valid=(crc_out==crc_received)?1:0;
+           
+endmodule
