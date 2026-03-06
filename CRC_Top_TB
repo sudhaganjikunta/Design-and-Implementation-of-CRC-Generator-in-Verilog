@@ -1,0 +1,41 @@
+module top_tb( );
+reg clk,rst,enable;   // common for both tx and rx
+
+// tx
+reg [6:0]tx_data_in;
+wire [2:0] tx_crc_out;
+wire [9:0] tx_data_out;   //[9:3] data [2:0] crc
+// rx
+wire [2:0] rx_crc_out;
+wire data_valid;
+
+crc_tx transmitter(.clk(clk),
+           .enable(enable),
+           .rst(rst),
+           .data_in(tx_data_in),
+           .data_out(tx_data_out),
+           .crc_out(tx_crc_out));
+
+crc_rx receiver(.clk(clk),
+           .enable(enable),
+           .rst(rst),
+           .data_in(tx_data_out[9:3]),
+           .crc_received(tx_data_out[2:0]),
+           .crc_out(rx_crc_out),
+           .data_valid(data_valid));
+
+always #5 clk=~clk;
+
+initial begin
+$monitor("clk=%b;en=%b;rst=%b;tx data =%b;rx data=%b;tx crc=%b;rx crc=%b,valid=%b",
+         clk,enable,rst,tx_data_in,tx_data_out[9:3],tx_crc_out,rx_crc_out,data_valid);
+         
+clk=0 ; enable=0 ; rst =1 ;tx_data_in =7'd0;
+#10 rst =0;enable =1;tx_data_in=7'b1010000;
+#20;
+tx_data_in = 7'b1010110;
+#30 $finish; 
+
+end
+
+endmodule
